@@ -41,6 +41,15 @@ class UserUpdate(BaseModel):
     is_employed: Optional[bool] = None
     address: Optional[AddressCreate] = None
 
+    # @model_validator(mode='after')
+    # def validate_age(cls, values):
+    #     age = values.age
+    #     is_employed = values.is_employed
+    #     if is_employed and age is not None:
+    #         if age < 18 or age > 65:
+    #             raise ValueError('Employed users must be between 18 and 65 years old')
+    #     return values
+
 
 class UserResponse(UserBase):
     user_uuid: str
