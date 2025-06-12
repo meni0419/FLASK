@@ -7,7 +7,7 @@ app = Flask(__name__)
 def home():
     return 'Hello, World!'
 
-
+#additional route
 @app.route('/user/<username>')
 def show_user_profile(username):
     return f'User {username}'
