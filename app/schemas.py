@@ -41,11 +41,11 @@ class UserUpdate(BaseModel):
     is_employed: Optional[bool] = None
     address: Optional[AddressCreate] = None
 
-    @field_validator('username')
-    def username_validator(cls, v):
-        if v.lower() in ['admin', 'administrator']:
-            raise ValueError('Username cannot be "admin" or "administrator"')
-        return v
+    # @field_validator('username')
+    # def username_validator(cls, v):
+    #     if v.lower() in ['admin', 'administrator']:
+    #         raise ValueError('Username cannot be "admin" or "administrator"')
+    #     return v
 
     # @model_validator(mode='after')
     # def validate_age(cls, values):
