@@ -242,7 +242,7 @@ def delete_address(address_id: int):
         if not address:
             raise ValueError("Address not found")
 
-        # Check if address is being used by any user
+        # Check if an address is being used by any user
         if address.users:
             raise ValueError("Cannot delete address that is assigned to users")
 
