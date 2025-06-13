@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 
@@ -23,7 +23,7 @@ class AddressResponse(AddressBase):
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3)
     email: Optional[EmailStr] = None
-    full_name: Optional[str] = None
+    full_name: Optional[str] = Field(None, pattern=r'^[a-zA-Z\s]*$')
     age: Optional[int] = Field(None, ge=0, le=120)
     is_employed: Optional[bool] = False
 
@@ -40,6 +40,12 @@ class UserUpdate(BaseModel):
     age: Optional[int] = Field(None, ge=0, le=120)
     is_employed: Optional[bool] = None
     address: Optional[AddressCreate] = None
+
+    @field_validator('username')
+    def username_validator(cls, v):
+        if v.lower() in ['admin', 'administrator']:
+            raise ValueError('Username cannot be "admin" or "administrator"')
+        return v
 
     # @model_validator(mode='after')
     # def validate_age(cls, values):

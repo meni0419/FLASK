@@ -126,7 +126,7 @@ def update_user(user_uuid: str, user_data: dict):
         if parsed_data.is_employed is not None:
             user.is_employed = parsed_data.is_employed
 
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now()
 
         # Обработка адреса
         if parsed_data.address:
@@ -242,7 +242,7 @@ def delete_address(address_id: int):
         if not address:
             raise ValueError("Address not found")
 
-        # Check if address is being used by any user
+        # Check if any user is using an address
         if address.users:
             raise ValueError("Cannot delete address that is assigned to users")
 
