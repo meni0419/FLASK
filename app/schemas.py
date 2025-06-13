@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr, field_validator, model_validator
+from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 from datetime import datetime
 
@@ -43,7 +43,7 @@ class UserUpdate(BaseModel):
 
     # @model_validator(mode='after')
     # def validate_age(cls, values):
-    #     age = values.age
+    #     age = values.age 
     #     is_employed = values.is_employed
     #     if is_employed and age is not None:
     #         if age < 18 or age > 65:
