@@ -126,7 +126,7 @@ def update_user(user_uuid: str, user_data: dict):
         if parsed_data.is_employed is not None:
             user.is_employed = parsed_data.is_employed
 
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now()
 
         # Обработка адреса
         if parsed_data.address:
