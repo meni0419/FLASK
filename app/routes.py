@@ -14,7 +14,7 @@ def create_user_route():
             return jsonify({"error": "No JSON data provided"}), 400
 
         user = create_user(data)
-        return jsonify(user), 200
+        return jsonify(user), 201
     except ValidationError as ve:
         return jsonify({"error": "Validation error", "details": ve.errors()}), 400
     except Exception as e:
@@ -55,7 +55,7 @@ def update_user_route(user_uuid):
             return jsonify({"error": "No JSON data provided"}), 400
 
         user = update_user(user_uuid, data)
-        return jsonify(user), 200
+        return jsonify(user), 201
     except ValidationError as ve:
         return jsonify({"error": "Validation error", "details": ve.errors()}), 400
     except ValueError as ve:
