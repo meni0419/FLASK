@@ -170,3 +170,85 @@ def delete_user(user_uuid: str):
     except Exception as e:
         db.session.rollback()
         raise e
+
+
+def address_to_dict(address):
+    """Преобразование объекта Address в словарь для JSON ответа"""
+    return {
+        "address_id": address.address_id,
+        "city": address.city,
+        "street": address.street,
+        "house_number": address.house_number
+    }
+
+
+def create_address(address_data: dict):
+    try:
+        from app.schemas import AddressCreate
+        parsed_data = AddressCreate(**address_data)
+
+        address = Address(
+            city=parsed_data.city,
+            street=parsed_data.street,
+            house_number=parsed_data.house_number
+        )
+
+        db.session.add(address)
+        db.session.commit()
+
+        return address_to_dict(address)
+
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def get_address_by_id(address_id: int):
+    address = Address.query.filter_by(address_id=address_id).first()
+    if address:
+        return address_to_dict(address)
+    return None
+
+
+def get_all_addresses():
+    addresses = Address.query.all()
+    return [address_to_dict(address) for address in addresses]
+
+
+def update_address(address_id: int, address_data: dict):
+    try:
+        from app.schemas import AddressCreate
+        address = Address.query.filter_by(address_id=address_id).first()
+        if not address:
+            raise ValueError("Address not found")
+
+        parsed_data = AddressCreate(**address_data)
+
+        address.city = parsed_data.city
+        address.street = parsed_data.street
+        address.house_number = parsed_data.house_number
+
+        db.session.commit()
+        return address_to_dict(address)
+
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def delete_address(address_id: int):
+    try:
+        address = Address.query.filter_by(address_id=address_id).first()
+        if not address:
+            raise ValueError("Address not found")
+
+        # Check if address is being used by any user
+        if address.users:
+            raise ValueError("Cannot delete address that is assigned to users")
+
+        db.session.delete(address)
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        raise e
