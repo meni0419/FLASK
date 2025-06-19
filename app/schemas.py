@@ -3,6 +3,52 @@ from typing import Optional
 from datetime import datetime
 
 
+class ProductBase(BaseModel):
+    name: str = Field(..., min_length=3)
+    price: float = Field(..., gt=0)
+    description: Optional[str] = None
+    in_stock: bool = True
+
+
+class ProductCreate(ProductBase):
+    price: float = Field(..., gt=0)
+    in_stock: bool = True
+    category_id: int = Field(..., gt=0)
+
+
+class ProductUpdate(ProductBase):
+    product_id: int
+    category_id: int
+
+
+class ProductResponse(ProductBase):
+    product_id: int
+    category_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CategoryBase(BaseModel):
+    name: str = Field(..., min_length=3)
+    description: Optional[str] = None
+
+
+class CategoryCreate(CategoryBase):
+    pass
+
+
+class CategoryUpdate(CategoryBase):
+    category_id: int
+
+
+class CategoryResponse(CategoryBase):
+    category_id: int
+
+    class Config:
+        from_attributes = True
+
+
 class AddressBase(BaseModel):
     city: str = Field(..., min_length=2)
     street: str = Field(..., min_length=3)

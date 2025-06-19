@@ -2,6 +2,34 @@ import uuid
 from datetime import datetime
 from app import db
 
+class Product(db.Model):
+    __tablename__ = 'products'
+
+    product_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    in_stock = db.Column(db.Boolean, nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.category_id'), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.now)
+
+    def __repr__(self):
+        return f"<Product {self.product_id}, {self.name}, {self.price}, {self.in_stock}, {self.description}>"
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+
+    category_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.now)
+    products = db.relationship('Product', backref='category', lazy=True)
+
+    def __repr__(self):
+        return f"<Category {self.category_id}, {self.name}, {self.description}>"
+
 class Address(db.Model):
     __tablename__ = 'addresses'
 
@@ -28,8 +56,8 @@ class User(db.Model):
     email = db.Column(db.String(255), nullable=True)
     password_hash = db.Column(db.String(255), nullable=True)
     full_name = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+    updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.now)
     status = db.Column(db.Integer, default=1)
     is_admin = db.Column(db.Boolean, default=False)
     age = db.Column(db.Integer, nullable=True)

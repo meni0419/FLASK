@@ -1,11 +1,156 @@
 import uuid
+from itertools import product
+
 from passlib.context import CryptContext
 from datetime import datetime
 from app import db
-from app.models import User, Address
-from app.schemas import UserCreate, UserUpdate
+from app.models import User, Address, Product, Category
+from app.schemas import UserCreate, UserUpdate, ProductCreate, ProductUpdate, CategoryCreate, CategoryUpdate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+
+def product_to_dict(product):
+    return {
+        "product_id": product.product_id,
+        "name": product.name,
+        "price": product.price,
+        "description": product.description,
+        "in_stock": product.in_stock,
+        "category_id": product.category_id,
+        "created_at": product.created_at.isoformat() if product.created_at else None,
+        "updated_at": product.updated_at.isoformat() if product.updated_at else None
+    }
+
+
+def category_to_dict(category):
+    return {
+        "category_id": category.category_id,
+        "name": category.name,
+        "description": category.description,
+        "created_at": category.created_at.isoformat() if category.created_at else None,
+        "updated_at": category.updated_at.isoformat() if category.updated_at else None
+    }
+
+
+def get_all_products():
+    products = Product.query.all()
+    return [product_to_dict(product) for product in products]
+
+
+def get_all_categories():
+    categories = Category.query.all()
+    return [category_to_dict(category) for category in categories]
+
+
+def get_product_by_id(product_id):
+    product = Product.query.filter_by(product_id=product_id).first()
+    if product:
+        return product_to_dict(product)
+    return None
+
+
+def get_category_by_id(category_id):
+    category = Category.query.filter_by(category_id=category_id).first()
+    if category:
+        return category_to_dict(category)
+    return None
+
+
+def create_product(product_data: dict):
+    try:
+        parsed_data = ProductCreate(**product_data)
+        product = Product(
+            name=parsed_data.name,
+            price=parsed_data.price,
+            description=parsed_data.description,
+            in_stock=parsed_data.in_stock,
+            category_id=parsed_data.category_id
+        )
+
+        db.session.add(product)
+        db.session.commit()
+
+        return product_to_dict(product)
+
+    except Exception as e:
+        raise e
+
+
+def update_product(product_id: int, product_data: dict):
+    try:
+        product = Product.query.filter_by(product_id=product_id).first()
+        if not product:
+            raise ValueError("Product not found")
+        parsed_data = ProductUpdate(**product_data)
+        product.name = parsed_data.name
+        product.price = parsed_data.price
+        product.description = parsed_data.description
+        product.in_stock = parsed_data.in_stock
+        product.category_id = parsed_data.category_id
+        product.updated_at = datetime.now()
+        db.session.commit()
+        return product_to_dict(product)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def delete_product(product_id: int):
+    try:
+        product = Product.query.filter_by(product_id=product_id).first()
+        if not product:
+            raise ValueError("Product not found")
+        db.session.delete(product)
+        db.session.commit()
+        return product_to_dict(product)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def create_category(category_data: dict):
+    try:
+        parsed_data = CategoryCreate(**category_data)
+        category = Category(
+            name=parsed_data.name,
+            description=parsed_data.description
+        )
+        db.session.add(category)
+        db.session.commit()
+        return category_to_dict(category)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def update_category(category_id: int, category_data: dict):
+    try:
+        category = Category.query.filter_by(category_id=category_id).first()
+        if not category:
+            raise ValueError("Category not found")
+        parsed_data = CategoryUpdate(**category_data)
+        category.name = parsed_data.name
+        category.description = parsed_data.description
+        category.updated_at = datetime.now()
+        db.session.commit()
+        return category_to_dict(category)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def delete_category(category_id: int):
+    try:
+        category = Category.query.filter_by(category_id=category_id).first()
+        if not category:
+            raise ValueError("Category not found")
+        db.session.delete(category)
+        db.session.commit()
+        return category_to_dict(category)
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 
 def user_to_dict(user):
@@ -126,7 +271,7 @@ def update_user(user_uuid: str, user_data: dict):
         if parsed_data.is_employed is not None:
             user.is_employed = parsed_data.is_employed
 
-        user.updated_at = datetime.utcnow()
+        user.updated_at = datetime.now()
 
         # Обработка адреса
         if parsed_data.address:

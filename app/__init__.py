@@ -13,9 +13,8 @@ def create_app():
     app = Flask(__name__)
 
     # Конфигурация
-    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-here')
-    app.config[
-        'SQLALCHEMY_DATABASE_URI'] = f"mysql+pymysql://{os.getenv('DATABASE_USER')}:{os.getenv('DATABASE_PASSWORD')}@{os.getenv('DATABASE_HOST')}:{os.getenv('DATABASE_PORT')}/{os.getenv('DATABASE_NAME')}"
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
         'pool_pre_ping': True,
@@ -26,7 +25,7 @@ def create_app():
     db.init_app(app)
 
     # Импорт моделей после инициализации db
-    from app.models import User, Address
+    from app.models import User, Address, Product, Category
 
     # Импорт и регистрация blueprint
     from app.routes import api_blueprint
