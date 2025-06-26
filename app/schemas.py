@@ -17,7 +17,6 @@ class ProductCreate(ProductBase):
 
 
 class ProductUpdate(ProductBase):
-    product_id: int
     category_id: int
 
 
