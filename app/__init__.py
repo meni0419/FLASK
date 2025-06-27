@@ -1,5 +1,7 @@
 from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import inspect
 import os
 from dotenv import load_dotenv
 
@@ -7,6 +9,7 @@ load_dotenv()
 
 # Создаем экземпляр БД
 db = SQLAlchemy()
+migrate = Migrate()
 
 
 def create_app():
@@ -23,16 +26,16 @@ def create_app():
 
     # Инициализация БД с приложением
     db.init_app(app)
+    migrate.init_app(app, db)  # Инициализируем миграции
 
     # Импорт моделей после инициализации db
-    from app.models import User, Address, Product, Category
+    from app.models import (
+        User, Address,
+        Product, Category,
+        QuestionCategory, Question)
 
     # Импорт и регистрация blueprint
     from app.routes import api_blueprint
     app.register_blueprint(api_blueprint)
-
-    # Создание таблиц
-    with app.app_context():
-        db.create_all()
 
     return app
