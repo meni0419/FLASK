@@ -2,6 +2,52 @@ from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional
 from datetime import datetime
 
+# Схемы для категорий вопросов
+class QuestionCategoryBase(BaseModel):
+    name: str = Field(..., min_length=3)
+    description: Optional[str] = None
+
+
+class QuestionCategoryCreate(QuestionCategoryBase):
+    pass
+
+
+class QuestionCategoryUpdate(QuestionCategoryBase):
+    pass
+
+
+class QuestionCategoryResponse(QuestionCategoryBase):
+    question_category_id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+# Схемы для вопросов
+class QuestionBase(BaseModel):
+    question: str = Field(..., min_length=5)
+
+
+class QuestionCreate(QuestionBase):
+    question_category_id: int = Field(..., gt=0)
+
+
+class QuestionUpdate(QuestionBase):
+    question_category_id: Optional[int] = Field(None, gt=0)
+
+
+class QuestionResponse(QuestionBase):
+    question_id: int
+    question_category_id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+    # Интеграция данных о категории
+    category: Optional[QuestionCategoryResponse] = None
+
+    class Config:
+        from_attributes = True
 
 class ProductBase(BaseModel):
     name: str = Field(..., min_length=3)

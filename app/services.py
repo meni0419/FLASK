@@ -4,11 +4,179 @@ from itertools import product
 from passlib.context import CryptContext
 from datetime import datetime
 from app import db
-from app.models import User, Address, Product, Category
-from app.schemas import UserCreate, UserUpdate, ProductCreate, ProductUpdate, CategoryCreate, CategoryUpdate
+from app.models import User, Address, Product, Category, Question, QuestionCategory
+from app.schemas import UserCreate, UserUpdate, ProductCreate, ProductUpdate, CategoryCreate, CategoryUpdate, \
+    QuestionUpdate, QuestionCreate, QuestionCategoryCreate, QuestionCategoryUpdate
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
+# Функции для Question Category
+def question_category_to_dict(question_category):
+    return {
+        "question_category_id": question_category.question_category_id,
+        "name": question_category.name,
+        "description": question_category.description,
+        "created_at": question_category.created_at.isoformat() if question_category.created_at else None,
+        "updated_at": question_category.updated_at.isoformat() if question_category.updated_at else None
+    }
+
+
+def get_all_question_categories():
+    question_categories = QuestionCategory.query.all()
+    return [question_category_to_dict(qc) for qc in question_categories]
+
+
+def get_question_category_by_id(question_category_id):
+    question_category = QuestionCategory.query.filter_by(question_category_id=question_category_id).first()
+    if question_category:
+        return question_category_to_dict(question_category)
+    return None
+
+
+def create_question_category(question_category_data: dict):
+    try:
+        parsed_data = QuestionCategoryCreate(**question_category_data)
+        question_category = QuestionCategory(
+            name=parsed_data.name,
+            description=parsed_data.description
+        )
+        db.session.add(question_category)
+        db.session.commit()
+        return question_category_to_dict(question_category)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def update_question_category(question_category_id: int, question_category_data: dict):
+    try:
+        question_category = QuestionCategory.query.filter_by(question_category_id=question_category_id).first()
+        if not question_category:
+            raise ValueError("Question category not found")
+
+        parsed_data = QuestionCategoryUpdate(**question_category_data)
+        question_category.name = parsed_data.name
+        question_category.description = parsed_data.description
+        question_category.updated_at = datetime.now()
+
+        db.session.commit()
+        return question_category_to_dict(question_category)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def delete_question_category(question_category_id: int):
+    try:
+        question_category = QuestionCategory.query.filter_by(question_category_id=question_category_id).first()
+        if not question_category:
+            raise ValueError("Question category not found")
+
+        # Проверяем, есть ли связанные вопросы
+        if question_category.questions:
+            raise ValueError("Cannot delete question category that has associated questions")
+
+        db.session.delete(question_category)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+# Функции для Questions
+def question_to_dict(question):
+    question_dict = {
+        "question_id": question.question_id,
+        "question": question.question,
+        "question_category_id": question.question_category_id,
+        "created_at": question.created_at.isoformat() if question.created_at else None,
+        "updated_at": question.updated_at.isoformat() if question.updated_at else None,
+        "category": None
+    }
+
+    # Добавляем информацию о категории
+    if question.category:
+        question_dict["category"] = question_category_to_dict(question.category)
+
+    return question_dict
+
+
+def get_all_questions():
+    questions = Question.query.all()
+    return [question_to_dict(question) for question in questions]
+
+
+def get_question_by_id(question_id):
+    question = Question.query.filter_by(question_id=question_id).first()
+    if question:
+        return question_to_dict(question)
+    return None
+
+
+def get_questions_by_category(question_category_id):
+    questions = Question.query.filter_by(question_category_id=question_category_id).all()
+    return [question_to_dict(question) for question in questions]
+
+
+def create_question(question_data: dict):
+    try:
+        parsed_data = QuestionCreate(**question_data)
+
+        # Проверяем, существует ли категория
+        category = QuestionCategory.query.filter_by(question_category_id=parsed_data.question_category_id).first()
+        if not category:
+            raise ValueError("Question category not found")
+
+        question = Question(
+            question=parsed_data.question,
+            question_category_id=parsed_data.question_category_id
+        )
+
+        db.session.add(question)
+        db.session.commit()
+        return question_to_dict(question)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def update_question(question_id: int, question_data: dict):
+    try:
+        question = Question.query.filter_by(question_id=question_id).first()
+        if not question:
+            raise ValueError("Question not found")
+
+        parsed_data = QuestionUpdate(**question_data)
+
+        # Если обновляется категория, проверяем её существование
+        if parsed_data.question_category_id:
+            category = QuestionCategory.query.filter_by(question_category_id=parsed_data.question_category_id).first()
+            if not category:
+                raise ValueError("Question category not found")
+            question.question_category_id = parsed_data.question_category_id
+
+        question.question = parsed_data.question
+        question.updated_at = datetime.now()
+
+        db.session.commit()
+        return question_to_dict(question)
+    except Exception as e:
+        db.session.rollback()
+        raise e
+
+
+def delete_question(question_id: int):
+    try:
+        question = Question.query.filter_by(question_id=question_id).first()
+        if not question:
+            raise ValueError("Question not found")
+
+        db.session.delete(question)
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 def product_to_dict(product):
     return {

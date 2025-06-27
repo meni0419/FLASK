@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from app import db
 
+
 class QuestionCategory(db.Model):
     __tablename__ = 'question_categories'
 
@@ -10,17 +11,24 @@ class QuestionCategory(db.Model):
     description = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.now)
+    questions = db.relationship('Question', backref='category', lazy=True)
 
     def __repr__(self):
         return f"<QuestionCategory {self.question_category_id}, {self.name}, {self.description}>"
 
+
 class Question(db.Model):
     __tablename__ = 'questions'
     question_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    question_category_id = db.Column(db.Integer, db.ForeignKey('question_categories.question_category_id'), nullable=False)
+    question_category_id = db.Column(db.Integer, db.ForeignKey('question_categories.question_category_id'),
+                                     nullable=False)
     question = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime, nullable=True, onupdate=datetime.now)
+
+    def __repr__(self):
+        return f"<Question {self.question_id}, {self.question}>"
+
 
 class Product(db.Model):
     __tablename__ = 'products'
